@@ -1,0 +1,44 @@
+receivers:
+  filelog:
+    include:
+      - /var/lib/docker/containers/*/*.log
+    start_at: beginning
+    include_file_name: true
+
+processors:
+  attributes/add_metadata:
+    actions:
+      - key: dataSource.category
+        value: "security"
+        action: insert
+      - key: dataSource.name
+        value: "Kuma Uptime"
+        action: insert
+      - key: dataSource.vendor
+        value: "Kuma"
+        action: insert
+      - key: sourcetype
+        value: "mick"
+        action: insert
+      - key: parser
+        value: "parse_me"
+        action: insert
+
+exporters:
+  dataset/logs:
+    dataset_url: https://xdr.us1.sentinelone.net
+    api_key: "SDL_Write_Key"
+    buffer:
+      max_lifetime: 5s
+      retry_shutdown_timeout: 30s
+    server_host:
+      use_hostname: true
+    logs:
+      export_resource_info_on_event: false
+
+service:
+  pipelines:
+    logs:
+     receivers: [filelog]
+     processors: [attributes/add_metadata]
+     exporters: [dataset/logs]
