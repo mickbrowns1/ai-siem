@@ -1,0 +1,37 @@
+receivers:
+  filelog:
+    include:
+      - /var/lib/docker/containers/*/*.log
+    start_at: beginning
+    include_file_name: true
+
+processors:
+  attributes/add_metadata:
+    actions:
+      - key: dataSource.category
+        value: "security"
+        action: insert
+      - key: dataSource.name
+        value: "Kuma Uptime"
+        action: insert
+      - key: dataSource.vendor
+        value: "Kuma"
+        action: insert
+      - key: sourcetype
+        value: "mick"
+        action: insert
+      - key: parser
+        value: "parse_me"
+        action: insert
+
+exporters:
+  splunk_hec:
+    token: "hec_guid"
+    endpoint: "https://ingest.us1.sentinlone.net"
+
+service:
+  pipelines:
+    logs:
+     receivers: [filelog]
+     processors: [attributes/add_metadata]
+     exporters: [splunk_hec]
